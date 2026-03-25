@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏃 RUN OR PAY</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d0d;--surface:#161616;--card:#1e1e1e;--border:#2a2a2a;
+    --accent:#c8f135;--text:#f0f0f0;--muted:#555;
+    --safe:#4caf50;--warn:#ff9800;--danger:#f44336;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;padding-bottom:80px;}
+  .top-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px 10px;position:sticky;top:0;z-index:50;}
+  .nav-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--accent);}
+  .nav-sub{font-size:.72rem;color:var(--muted);margin-top:1px;}
+  .month-scroll{display:flex;gap:8px;overflow-x:auto;padding-top:10px;scrollbar-width:none;}
+  .month-scroll::-webkit-scrollbar{display:none;}
+  .m-tab{flex-shrink:0;padding:5px 14px;border-radius:100px;font-size:.78rem;background:var(--card);border:1px solid var(--border);color:var(--muted);font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;}
+  .m-tab.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent);}
+  .m-tab:hover:not(.active){border-color:#444;color:var(--text);}
+  .btn-add-month{flex-shrink:0;padding:5px 12px;border-radius:100px;font-size:.78rem;background:transparent;border:1px dashed var(--border);color:var(--muted);font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;}
+  .btn-add-month:hover{border-color:var(--accent);color:var(--accent);}
+  .section{padding:16px;}
+  .summary-row{display:flex;gap:10px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+  .summary-row::-webkit-scrollbar{display:none;}
+  .sum-card{flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;min-width:100px;}
+  .sum-card .val{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:1px;color:var(--accent);}
+  .sum-card .lbl{font-size:.68rem;color:var(--muted);margin-top:2px;}
+  .member-table{width:100%;border-collapse:collapse;}
+  .member-table th{padding:8px 10px;font-size:.7rem;color:var(--muted);font-weight:500;text-align:left;border-bottom:1px solid var(--border);letter-spacing:.5px;}
+  .member-table td{padding:10px 10px;font-size:.85rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+  .member-table tr:last-child td{border-bottom:none;}
+  .member-table tr:hover td{background:rgba(255,255,255,.02);}
+  .km-cell{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;}
+  .fine-tag{display:inline-block;padding:3px 8px;border-radius:6px;font-size:.7rem;font-weight:700;}
+  .fine-0{background:rgba(76,175,80,.15);color:var(--safe);border:1px solid rgba(76,175,80,.3);}
+  .fine-5{background:rgba(255,152,0,.15);color:var(--warn);border:1px solid rgba(255,152,0,.3);}
+  .fine-10{background:rgba(244,67,54,.15);color:var(--danger);border:1px solid rgba(244,67,54,.3);}
+  .mini-bar-wrap{width:70px;height:4px;background:#111;border-radius:100px;overflow:hidden;margin-top:3px;}
+  .mini-bar{height:100%;border-radius:100px;transition:width .4s;}
+  .date-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;}
+  .date-input:focus{border-color:var(--accent);}
+  .member-log-list{display:flex;flex-direction:column;gap:8px;}
+  .member-log-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+  .member-log-name{font-weight:700;font-size:.9rem;}
+  .log-today-km{font-size:.72rem;color:var(--muted);margin-top:2px;}
+  .km-stepper{display:flex;align-items:center;gap:6px;}
+  .step-btn{width:30px;height:30px;border-radius:8px;background:var(--border);border:none;color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .step-btn:hover{background:#3a3a3a;}
+  .km-num-input{width:56px;text-align:center;background:#111;border:1px solid var(--border);color:var(--text);padding:6px 4px;border-radius:8px;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;}
+  .km-num-input:focus{border-color:var(--accent);}
+  .btn-save-log{background:var(--accent);color:#000;border:none;padding:11px;border-radius:10px;font-weight:700;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-top:14px;width:100%;}
+  .btn-save-log:disabled{opacity:.4;cursor:not-allowed;}
+  .daily-log-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .daily-entry-row{display:flex;align-items:center;gap:8px;font-size:.85rem;padding:3px 0;}
+  .daily-entry-name{flex:1;font-weight:500;}
+  .daily-entry-km{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--accent);}
+  .member-item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+  .member-item-name{flex:1;font-weight:600;}
+  .target-badge{font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:var(--accent);background:rgba(200,241,53,.1);border:1px solid rgba(200,241,53,.2);padding:2px 8px;border-radius:6px;}
+  .small-btn{background:none;border:1px solid var(--border);color:var(--muted);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;}
+  .small-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .small-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+  .add-member-form{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:16px;}
+  .add-member-form h4{font-size:.8rem;color:var(--muted);margin-bottom:10px;letter-spacing:1px;}
+  .form-row{display:flex;gap:8px;margin-bottom:8px;}
+  .form-input{flex:1;background:#111;border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:.85rem;font-family:'Noto Sans KR',sans-serif;outline:none;}
+  .form-input:focus{border-color:var(--accent);}
+  .btn-form-add{background:var(--accent);color:#000;border:none;padding:8px 14px;border-radius:8px;font-weight:700;font-size:.82rem;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;width:100%;max-width:320px;}
+  .modal h3{font-size:.95rem;margin-bottom:14px;}
+  .modal-btns{display:flex;gap:8px;margin-top:14px;}
+  .btn-cancel{flex:1;background:none;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:8px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+  .btn-confirm{flex:1;background:var(--accent);border:none;color:#000;padding:9px;border-radius:8px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;}
+  .bnav-btn{flex:1;padding:12px 6px 14px;text-align:center;cursor:pointer;background:none;border:none;color:var(--muted);font-family:'Noto Sans KR',sans-serif;transition:color .2s;}
+  .bnav-btn.active{color:var(--accent);}
+  .bnav-icon{font-size:1.2rem;display:block;}
+  .bnav-label{font-size:.65rem;margin-top:3px;display:block;}
+  .empty-msg{text-align:center;padding:40px 20px;color:var(--muted);font-size:.85rem;}
+  .section-label{font-size:.72rem;color:var(--muted);letter-spacing:1px;margin-bottom:10px;}
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+  .loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:.85rem;color:var(--muted);}
+  .sync-indicator{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--safe);margin-left:6px;vertical-align:middle;}
+  .sync-indicator.syncing{background:var(--warn);animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:10px;font-size:.82rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">데이터 불러오는 중...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="top-nav">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div class="nav-title">🏃 RUN OR PAY <span class="sync-indicator" id="syncDot"></span></div>
+      <div class="nav-sub" id="navSub"></div>
+    </div>
+    <div id="daysLeftBadge" style="font-size:.72rem;color:var(--accent);font-weight:600"></div>
+  </div>
+  <div class="month-scroll" id="monthTabs"></div>
+</div>
+
+<div id="pageOverview" style="display:none">
+  <div class="section">
+    <div class="summary-row" id="summaryRow"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden">
+      <table class="member-table">
+        <thead><tr><th>이름</th><th>목표</th><th>합산</th><th>남은거리</th><th>벌금</th></tr></thead>
+        <tbody id="overviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="pageLog" style="display:none">
+  <div class="section">
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input class="date-input" type="date" id="logDate" />
+    </div>
+    <div class="member-log-list" id="memberLogList"></div>
+    <button class="btn-save-log" id="saveLogBtn" onclick="saveLog()">💾 저장</button>
+  </div>
+  <div class="section" style="padding-top:0">
+    <div class="section-label">📋 이번 달 기록</div>
+    <div id="dailyLogList"></div>
+  </div>
+</div>
+
+<div id="pageMembers" style="display:none">
+  <div class="section">
+    <div class="section-label">👥 멤버 관리</div>
+    <div id="memberMgmtList"></div>
+    <div class="add-member-form">
+      <h4>+ 새 멤버 추가</h4>
+      <div class="form-row">
+        <input class="form-input" id="newMemberName" placeholder="이름" maxlength="8" style="max-width:100px"/>
+        <input class="form-input" id="newMemberTarget" type="number" placeholder="목표 km" style="max-width:90px"/>
+        <button class="btn-form-add" onclick="addMember()">추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>✏️ 멤버 수정</h3>
+    <div class="form-row"><input class="form-input" id="editName" placeholder="이름"/></div>
+    <div class="form-row"><input class="form-input" id="editTarget" type="number" placeholder="목표 km"/></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-confirm" onclick="confirmEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="bnav-btn active" id="bnav0" onclick="showPage('overview')"><span class="bnav-icon">📊</span><span class="bnav-label">현황</span></button>
+  <button class="bnav-btn" id="bnav1" onclick="showPage('log')"><span class="bnav-icon">✏️</span><span class="bnav-label">기록</span></button>
+  <button class="bnav-btn" id="bnav2" onclick="showPage('members')"><span class="bnav-icon">👥</span><span class="bnav-label">멤버</span></button>
+</div>
+
+<script type="module">
+// ── Firebase SDK ──
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, get, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  databaseURL: "https://run-or-pay-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── CONSTANTS ──
+const DEFAULT_MEMBERS = [
+  {id:1,name:'강냉이',target:200},
+  {id:2,name:'김짱정',target:100},
+  {id:3,name:'대바리',target:80},
+  {id:4,name:'원숭이',target:200},
+  {id:5,name:'영우맹',target:30},
+  {id:6,name:'판부랄킹',target:200},
+  {id:7,name:'새우맹',target:50},
+];
+const MONTHS_KO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const DAY_KO=['일','월','화','수','목','금','토'];
+
+// ── STATE (in-memory, synced from Firebase) ──
+let state = { members: [], months: {}, activeMonth: null };
+let currentPage = 'overview';
+let editingId = null;
+let logInputs = {};
+
+// ── FIREBASE HELPERS ──
+function setSyncing(on) {
+  document.getElementById('syncDot').className = 'sync-indicator' + (on ? ' syncing' : '');
+}
+
+async function fbSet(path, val) {
+  setSyncing(true);
+  await set(ref(db, path), val);
+  setSyncing(false);
+}
+async function fbRemove(path) {
+  setSyncing(true);
+  await remove(ref(db, path));
+  setSyncing(false);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── MONTH HELPERS ──
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+function monthLabel(k) {
+  const [y,m] = k.split('-');
+  return `${y}년 ${MONTHS_KO[parseInt(m)-1]}`;
+}
+function getActiveMonth() {
+  return state.months[state.activeMonth] || { logs: {} };
+}
+function getMemberKm(memberId) {
+  const logs = getActiveMonth().logs || {};
+  let total = 0;
+  Object.values(logs).forEach(dayLog => {
+    if (!dayLog) return;
+    const e = Object.values(dayLog).find(x => x.memberId === memberId);
+    if (e) total += e.km;
+  });
+  return Math.round(total * 10) / 10;
+}
+function getFine(km) {
+  if (km >= 150) return 0;
+  if (km >= 100) return 5;
+  return 10;
+}
+function getBarColor(km) {
+  if (km >= 150) return 'var(--safe)';
+  if (km >= 100) return 'var(--warn)';
+  return 'var(--danger)';
+}
+
+// ── INIT ──
+async function init() {
+  // Load or create members
+  const mSnap = await get(ref(db, 'members'));
+  if (mSnap.exists()) {
+    state.members = Object.values(mSnap.val());
+  } else {
+    state.members = DEFAULT_MEMBERS;
+    await fbSet('members', Object.fromEntries(DEFAULT_MEMBERS.map(m => [m.id, m])));
+  }
+
+  // Load months
+  const dSnap = await get(ref(db, 'months'));
+  if (dSnap.exists()) {
+    state.months = dSnap.val();
+  }
+
+  // Ensure current month exists
+  const k = todayKey();
+  if (!state.months[k]) {
+    state.months[k] = { logs: {} };
+    await fbSet(`months/${k}`, { logs: {} });
+  }
+  state.activeMonth = k;
+
+  // Hide loading
+  document.getElementById('loadingOverlay').style.display = 'none';
+
+  // Real-time listeners
+  onValue(ref(db, 'members'), snap => {
+    if (snap.exists()) { state.members = Object.values(snap.val()); renderAll(); }
+  });
+  onValue(ref(db, 'months'), snap => {
+    if (snap.exists()) { state.months = snap.val(); renderAll(); }
+    else { state.months = {}; renderAll(); }
+  });
+
+  showPage('overview');
+}
+
+// ── TABS ──
+function renderTabs() {
+  const el = document.getElementById('monthTabs');
+  el.innerHTML = '';
+  Object.keys(state.months).sort().forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'm-tab' + (k === state.activeMonth ? ' active' : '');
+    btn.textContent = monthLabel(k);
+    btn.onclick = () => { state.activeMonth = k; renderAll(); };
+    el.appendChild(btn);
+  });
+  const add = document.createElement('button');
+  add.className = 'btn-add-month'; add.textContent = '+ 새 달'; add.onclick = addMonth;
+  el.appendChild(add);
+
+  const [y, m] = state.activeMonth.split('-').map(Number);
+  const now = new Date();
+  const isNow = now.getFullYear() === y && now.getMonth() + 1 === m;
+  if (isNow) {
+    const last = new Date(y, m, 0).getDate();
+    document.getElementById('daysLeftBadge').textContent = `D-${last - now.getDate()}`;
+    document.getElementById('navSub').textContent = `${monthLabel(state.activeMonth)} · ${last}일 중 ${now.getDate()}일`;
+  } else {
+    document.getElementById('daysLeftBadge').textContent = '';
+    document.getElementById('navSub').textContent = monthLabel(state.activeMonth);
+  }
+}
+
+async function addMonth() {
+  const now = new Date();
+  let ny = now.getFullYear(), nm = now.getMonth() + 2;
+  if (nm > 12) { nm = 1; ny++; }
+  const sug = `${ny}-${String(nm).padStart(2,'0')}`;
+  const val = prompt(`추가할 달 입력 (예: ${sug})`, sug);
+  if (!val || !/^\d{4}-\d{2}$/.test(val.trim())) return;
+  const k = val.trim();
+  if (!state.months[k]) await fbSet(`months/${k}`, { logs: {} });
+  state.activeMonth = k;
+  renderAll();
+}
+
+// ── OVERVIEW ──
+function renderOverview() {
+  const members = state.members;
+  let totalFine = 0, safeCount = 0;
+  members.forEach(m => { const f = getFine(getMemberKm(m.id)); totalFine += f; if (f === 0) safeCount++; });
+  document.getElementById('summaryRow').innerHTML = `
+    <div class="sum-card"><div class="val">${members.length}</div><div class="lbl">참여 인원</div></div>
+    <div class="sum-card"><div class="val">${totalFine}</div><div class="lbl">총 벌금(만원)</div></div>
+    <div class="sum-card"><div class="val">${safeCount}</div><div class="lbl">150km 달성</div></div>
+  `;
+  const tbody = document.getElementById('overviewBody');
+  tbody.innerHTML = '';
+  const sorted = [...members].sort((a, b) => getMemberKm(b.id) - getMemberKm(a.id));
+  sorted.forEach(m => {
+    const km = getMemberKm(m.id);
+    const remain = Math.max(0, m.target - km);
+    const fine = getFine(km);
+    const pct = Math.min(km / Math.max(m.target, 150) * 100, 100);
+    const fc = fine === 0 ? 'fine-0' : fine === 5 ? 'fine-5' : 'fine-10';
+    const fl = fine === 0 ? '면제' : fine === 5 ? '5만원' : '10만원';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight:700">${esc(m.name)}</td>
+      <td style="color:var(--muted);font-size:.8rem">${m.target}</td>
+      <td>
+        <div class="km-cell" style="color:${getBarColor(km)}">${km.toFixed(1)}</div>
+        <div class="mini-bar-wrap"><div class="mini-bar" style="width:${pct}%;background:${getBarColor(km)}"></div></div>
+      </td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:${remain===0?'var(--safe)':'var(--text)'}">${remain === 0 ? '✓' : remain.toFixed(1)}</td>
+      <td><span class="fine-tag ${fc}">${fl}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── LOG PAGE ──
+function renderLogPage() {
+  const d = new Date();
+  const todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const dateInput = document.getElementById('logDate');
+  if (!dateInput.value) dateInput.value = todayStr;
+  renderMemberLogList();
+  renderDailyLogList();
+}
+
+function renderMemberLogList() {
+  const dateStr = document.getElementById('logDate').value;
+  const monthData = getActiveMonth();
+  const existingDay = monthData.logs && monthData.logs[dateStr] ? monthData.logs[dateStr] : {};
+  const existing = Object.values(existingDay);
+
+  const list = document.getElementById('memberLogList');
+  list.innerHTML = '';
+  logInputs = {};
+  state.members.forEach(m => {
+    const entry = existing.find(e => e.memberId === m.id);
+    const val = entry ? entry.km : 0;
+    logInputs[m.id] = val;
+    const totalKm = getMemberKm(m.id);
+    const remain = Math.max(0, m.target - totalKm);
+    const row = document.createElement('div');
+    row.className = 'member-log-row';
+    row.innerHTML = `
+      <div style="flex:1">
+        <div class="member-log-name">${esc(m.name)}</div>
+        <div class="log-today-km">누적 ${totalKm.toFixed(1)}km · 남은 ${remain.toFixed(1)}km</div>
+      </div>
+      <div class="km-stepper">
+        <button class="step-btn" onclick="window._stepKm(${m.id},-1)">−</button>
+        <input class="km-num-input" id="loginput-${m.id}" type="number" step="0.1" min="0" value="${val}" oninput="window._logInputs[${m.id}]=parseFloat(this.value)||0"/>
+        <button class="step-btn" onclick="window._stepKm(${m.id},1)">+</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+  // expose to inline handlers
+  window._logInputs = logInputs;
+  window._stepKm = (memberId, delta) => {
+    const input = document.getElementById(`loginput-${memberId}`);
+    const next = Math.max(0, Math.round(((parseFloat(input.value)||0) + delta) * 10) / 10);
+    input.value = next;
+    logInputs[memberId] = next;
+    window._logInputs = logInputs;
+  };
+}
+
+async function saveLog() {
+  const dateStr = document.getElementById('logDate').value;
+  if (!dateStr) { alert('날짜를 선택해주세요'); return; }
+  const entries = {};
+  let hasAny = false;
+  state.members.forEach(m => {
+    const km = logInputs[m.id] || 0;
+    if (km > 0) { entries[m.id] = { memberId: m.id, km }; hasAny = true; }
+  });
+  if (!hasAny) { alert('입력된 km가 없어요'); return; }
+  const btn = document.getElementById('saveLogBtn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  await fbSet(`months/${state.activeMonth}/logs/${dateStr}`, entries);
+  btn.disabled = false; btn.textContent = '💾 저장';
+  showToast(`✅ ${dateStr} 기록 저장 완료!`);
+}
+window.saveLog = saveLog;
+
+document.getElementById('logDate').addEventListener('change', renderMemberLogList);
+
+function renderDailyLogList() {
+  const monthData = getActiveMonth();
+  const el = document.getElementById('dailyLogList');
+  const logs = monthData.logs || {};
+  const dates = Object.keys(logs).sort().reverse();
+  if (!dates.length) { el.innerHTML = '<div class="empty-msg">아직 기록이 없어요 🏃</div>'; return; }
+  el.innerHTML = '';
+  dates.forEach(dateStr => {
+    const dayEntries = Object.values(logs[dateStr] || {});
+    if (!dayEntries.length) return;
+    const item = document.createElement('div');
+    item.className = 'daily-log-item';
+    const [y, mo, d] = dateStr.split('-');
+    const dayName = DAY_KO[new Date(dateStr + 'T00:00:00').getDay()];
+    const totalKm = dayEntries.reduce((s, e) => s + e.km, 0);
+    item.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--muted);margin-bottom:8px;font-weight:500">
+        <span>${parseInt(mo)}월 ${parseInt(d)}일 (${dayName}) · 합계 ${totalKm.toFixed(1)}km</span>
+        <button onclick="window._deleteDay('${dateStr}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:.75rem">🗑 삭제</button>
+      </div>
+      <div>
+        ${dayEntries.map(e => {
+          const member = state.members.find(m => m.id === e.memberId);
+          if (!member) return '';
+          return `<div class="daily-entry-row"><div class="daily-entry-name">${esc(member.name)}</div><div class="daily-entry-km">${e.km.toFixed(1)} km</div></div>`;
+        }).join('')}
+      </div>
+    `;
+    el.appendChild(item);
+  });
+}
+
+window._deleteDay = async (dateStr) => {
+  if (!confirm(`${dateStr} 기록을 삭제할까요?`)) return;
+  await fbRemove(`months/${state.activeMonth}/logs/${dateStr}`);
+  showToast('🗑 삭제됐어요');
+};
+
+// ── MEMBERS ──
+function renderMembersPage() {
+  const el = document.getElementById('memberMgmtList');
+  el.innerHTML = '';
+  state.members.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'member-item';
+    div.innerHTML = `
+      <div class="member-item-name">${esc(m.name)}</div>
+      <div class="target-badge">${m.target}km</div>
+      <button class="small-btn" onclick="window._openEdit(${m.id})">✏️</button>
+      <button class="small-btn danger" onclick="window._deleteMember(${m.id})">🗑</button>
+    `;
+    el.appendChild(div);
+  });
+}
+
+async function addMember() {
+  const name = document.getElementById('newMemberName').value.trim();
+  const target = parseFloat(document.getElementById('newMemberTarget').value) || 0;
+  if (!name || !target) { alert('이름과 목표 km을 입력해주세요'); return; }
+  if (state.members.find(m => m.name === name)) { alert('이미 있는 이름이에요'); return; }
+  const id = Date.now();
+  await fbSet(`members/${id}`, { id, name, target });
+  document.getElementById('newMemberName').value = '';
+  document.getElementById('newMemberTarget').value = '';
+  showToast(`✅ ${name} 추가됐어요`);
+}
+window.addMember = addMember;
+
+window._deleteMember = async (id) => {
+  const m = state.members.find(x => x.id === id);
+  if (!confirm(`${m?.name}을 삭제할까요?`)) return;
+  await fbRemove(`members/${id}`);
+  showToast('🗑 삭제됐어요');
+};
+
+window._openEdit = (id) => {
+  editingId = id;
+  const m = state.members.find(x => x.id === id);
+  document.getElementById('editName').value = m.name;
+  document.getElementById('editTarget').value = m.target;
+  document.getElementById('editModal').classList.add('open');
+};
+window.closeModal = () => {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+};
+window.confirmEdit = async () => {
+  const name = document.getElementById('editName').value.trim();
+  const target = parseFloat(document.getElementById('editTarget').value) || 0;
+  if (!name || !target) return;
+  await fbSet(`members/${editingId}`, { id: editingId, name, target });
+  showToast('✅ 수정됐어요');
+  window.closeModal();
+};
+document.getElementById('editModal').addEventListener('click', e => { if (e.target === e.currentTarget) window.closeModal(); });
+
+// ── PAGE NAV ──
+function showPage(page) {
+  currentPage = page;
+  ['overview','log','members'].forEach((p, i) => {
+    const pageEl = document.getElementById(`page${p.charAt(0).toUpperCase()+p.slice(1)}`);
+    if (pageEl) pageEl.style.display = p === page ? '' : 'none';
+    document.getElementById(`bnav${i}`).classList.toggle('active', p === page);
+  });
+  renderAll();
+}
+window.showPage = showPage;
+
+function renderAll() {
+  renderTabs();
+  if (currentPage === 'overview') renderOverview();
+  if (currentPage === 'log') renderLogPage();
+  if (currentPage === 'members') renderMembersPage();
+}
+
+init();
+</script>
+</body>
+</html>
